@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.pyc
@@ -10,3 +11,6 @@ __pycache__/
 
 # OS files
 .DS_Store
+=======
+
+>>>>>>> 9828ec8aac06e8efb7ff15c885323c396ebb3895
