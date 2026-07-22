@@ -7,51 +7,57 @@ EXCEL_PATH = os.path.join("data", "timetable.xlsx")
 
 
 def get_today_schedule():
-    """
-    Returns:
-        {
-            "date": "2026-07-13",
-            "status": "Working",
-            "timetable": "Monday",
-            "subjects": [...]
-        }
-    """
-
     wb = load_workbook(EXCEL_PATH, data_only=True)
 
     calendar = wb["Academic_Calendar"]
     weekly = wb["Weekly_Timetable"]
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now().date()
 
     status = None
     timetable_day = None
 
-    # Find today's entry in Academic_Calendar
+    # Find today's entry
     for row in calendar.iter_rows(min_row=2, values_only=True):
-        if str(row[0]) == today:
+        excel_date = row[0]
+
+        # Convert datetime to date
+        if hasattr(excel_date, "date"):
+            excel_date = excel_date.date()
+
+        if excel_date == today:
             status = row[2]
             timetable_day = row[3]
             break
 
-    # Holiday
-    if status == "Holiday":
+    # If today's date wasn't found
+    if timetable_day is None:
         return {
-            "date": today,
-            "status": "Holiday",
+            "date": str(today),
+            "status": "No Entry",
+            "timetable": None,
             "subjects": []
         }
 
-    # Read subjects from Weekly_Timetable
+    # Holiday
+    if status == "Holiday":
+        return {
+            "date": str(today),
+            "status": "Holiday",
+            "timetable": timetable_day,
+            "subjects": []
+        }
+
+    # Get subjects
     subjects = []
 
     for row in weekly.iter_rows(min_row=2, values_only=True):
-        if row[0] == timetable_day:
-            subjects = list(row[1:])
+        if str(row[0]).strip().lower() == str(timetable_day).strip().lower():
+            subjects = [x for x in row[1:] if x]
             break
 
     return {
-        "date": today,
+        "date": str(today),
         "status": "Working",
         "timetable": timetable_day,
         "subjects": subjects
